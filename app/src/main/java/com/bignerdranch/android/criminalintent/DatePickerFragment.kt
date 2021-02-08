@@ -13,9 +13,12 @@ import java.util.*
 
 private const val ARG_DATE = "date"
 
+
 class DatePickerFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+      val dat= arguments?.getSerializable(ARG_DATE) as Date
+
        val dateListener = DatePickerDialog.OnDateSetListener {
                _: DatePicker, year: Int, month: Int, day: Int ->
            val resultDate : Date = GregorianCalendar(year, month, day). time
@@ -34,7 +37,8 @@ class DatePickerFragment : DialogFragment() {
 
         return DatePickerDialog(
             requireContext(),
-            null,
+            //null,
+                dateListener,
             initialYear,
             initialMonth,
             initialDay
