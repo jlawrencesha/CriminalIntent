@@ -1,8 +1,12 @@
 package com.bignerdranch.android.criminalintent
 
+import android.app.Activity
 import android.app.ProgressDialog.show
 import android.content.Intent
 import android.content.Intent.EXTRA_SUBJECT
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.text.Editable
@@ -92,6 +96,33 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when{
+            resultCode != Activity.RESULT_OK -> return
+
+            requestCode == REQUEST_CONTACT && data != null ->{
+                val contactURI: Uri? = data.data
+                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+                val cursor = requireActivity().contentResolver
+                        .query(contactURI, queryFields,null,null,null)
+                cursor?.use {
+                    if (it.count==0) {
+                        return
+                    }
+                it.moveToFirst()
+                    val suspect = it.getString(0)
+                    crime.suspect = suspect
+                    crimeDetailViewModel.saveCrime(crime)
+                    suspectButton.text = suspect
+
+
+                }
+
+
+            }
+        }
+    }
+
     override fun onStart() {
         super.onStart()
 
@@ -158,6 +189,13 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             setOnClickListener {
                 startActivityForResult(pickContactIntent, REQUEST_CONTACT)
             }
+          //  pickContactIntent.addCategory(Intent.CATEGORY_HOME)
+            val packageManager: PackageManager = requireActivity().packageManager
+            val resolvedActivity: ResolveInfo? =
+                    packageManager.resolveActivity(pickContactIntent, PackageManager.MATCH_DEFAULT_ONLY)
+                    if(resolvedActivity == null){
+                        isEnabled = false
+                    }
         }
 
 
